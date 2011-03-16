@@ -1,9 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.Linq;
 using System.Net.NetworkInformation;
 using System.Runtime.InteropServices;
-using System.Text;
 using System.Threading;
 
 namespace ManagedWifi
@@ -187,7 +185,7 @@ namespace ManagedWifi
 
         #region Constructors
 
-        internal WlanInterface(WlanClient client, Wlan.WlanInterfaceInfo info)
+        public WlanInterface(WlanClient client, Wlan.WlanInterfaceInfo info)
         {
             _client = client;
             _info = info;

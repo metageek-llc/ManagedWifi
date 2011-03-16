@@ -1,6 +1,4 @@
-﻿////////////////////////////////////////////////////////////////
-
-#region Header
+﻿#region Header
 
 //
 // Copyright (c) 2007-2010 MetaGeek, LLC
@@ -20,7 +18,6 @@
 
 #endregion Header
 
-////////////////////////////////////////////////////////////////
 using System;
 using System.ComponentModel;
 using System.Diagnostics;
