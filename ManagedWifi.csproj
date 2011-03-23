@@ -177,6 +177,12 @@
       <Install>false</Install>
     </BootstrapperPackage>
   </ItemGroup>
+  <ItemGroup>
+    <ProjectReference Include="..\MetaGeek.Diagnostics\MetaGeek.Diagnostics\MetaGeek.Diagnostics.csproj">
+      <Project>{B530C01F-329D-4904-9452-3D01FA158102}</Project>
+      <Name>MetaGeek.Diagnostics</Name>
+    </ProjectReference>
+  </ItemGroup>
   <Import Project="$(MSBuildBinPath)\Microsoft.CSharp.targets" />
   <PropertyGroup>
     <PreBuildEvent>

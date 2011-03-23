@@ -22,6 +22,7 @@ using System;
 using System.Collections.Generic;
 using System.Runtime.InteropServices;
 using System.Text;
+using MetaGeek.Diagnostics;
 
 namespace ManagedWifi
 {
@@ -92,33 +93,38 @@ namespace ManagedWifi
 
         #region Event Related
 
-        #region Events
 
-        public event EventHandler<InterfaceNotificationEventsArgs> InterfaceArrivedEvent;
+        private EventHandler<InterfaceNotificationEventsArgs> _interfaceArrivedEvent;
+        private EventHandler<InterfaceNotificationEventsArgs> _interfaceRemovedEvent;
 
-        public event EventHandler<InterfaceNotificationEventsArgs> InterfaceRemovedEvent;
-
-        #endregion Events
-
-        #region Invoke Methods
-
-        protected virtual void InvokeInterfaceArrivedEvent(InterfaceNotificationEventsArgs e)
+        public event EventHandler<InterfaceNotificationEventsArgs> InterfaceArrivedEvent
         {
-            if (InterfaceArrivedEvent != null)
+            add
             {
-                InterfaceArrivedEvent(this, e);
+                EventConnectionRegistry.Instance.Connect();
+                _interfaceArrivedEvent += value;
             }
+            remove
+            {
+                EventConnectionRegistry.Instance.Disconnect();
+                _interfaceArrivedEvent -= value;
+            }
+            
         }
-
-        protected virtual void InvokeInterfaceRemovedEvent(InterfaceNotificationEventsArgs e)
+        public event EventHandler<InterfaceNotificationEventsArgs> InterfaceRemovedEvent
         {
-            if (InterfaceRemovedEvent != null)
+            add
             {
-                InterfaceRemovedEvent(this, e);
+                EventConnectionRegistry.Instance.Connect();
+                _interfaceRemovedEvent += value;
             }
+            remove
+            {
+                EventConnectionRegistry.Instance.Disconnect();
+                _interfaceRemovedEvent -= value;
+            }
+            
         }
-
-        #endregion Invoke Methods
 
         #endregion Event Related
 
@@ -201,11 +207,11 @@ namespace ManagedWifi
                             goto Label_0194;
 
                         case 13:
-                            InvokeInterfaceArrivedEvent(new InterfaceNotificationEventsArgs(notifyData.interfaceGuid));
+                            _interfaceArrivedEvent.Raise(this, new InterfaceNotificationEventsArgs(notifyData.interfaceGuid));
                             goto Label_0194;
 
                         case 14:
-                            InvokeInterfaceRemovedEvent(new InterfaceNotificationEventsArgs(notifyData.interfaceGuid));
+                            _interfaceRemovedEvent.Raise(this, new InterfaceNotificationEventsArgs(notifyData.interfaceGuid));
                             goto Label_0194;
                     }
                     break;
