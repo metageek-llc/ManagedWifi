@@ -94,37 +94,8 @@ namespace ManagedWifi
         #region Event Related
 
 
-        private EventHandler<InterfaceNotificationEventsArgs> _interfaceArrivedEvent;
-        private EventHandler<InterfaceNotificationEventsArgs> _interfaceRemovedEvent;
-
-        public event EventHandler<InterfaceNotificationEventsArgs> InterfaceArrivedEvent
-        {
-            add
-            {
-                EventConnectionRegistry.Instance.Connect();
-                _interfaceArrivedEvent += value;
-            }
-            remove
-            {
-                EventConnectionRegistry.Instance.Disconnect();
-                _interfaceArrivedEvent -= value;
-            }
-            
-        }
-        public event EventHandler<InterfaceNotificationEventsArgs> InterfaceRemovedEvent
-        {
-            add
-            {
-                EventConnectionRegistry.Instance.Connect();
-                _interfaceRemovedEvent += value;
-            }
-            remove
-            {
-                EventConnectionRegistry.Instance.Disconnect();
-                _interfaceRemovedEvent -= value;
-            }
-            
-        }
+        public RegisteredEventHandler<InterfaceNotificationEventsArgs> InterfaceArrivedEvent = new RegisteredEventHandler<InterfaceNotificationEventsArgs>();
+        public RegisteredEventHandler<InterfaceNotificationEventsArgs> InterfaceRemovedEvent = new RegisteredEventHandler<InterfaceNotificationEventsArgs>();
 
         #endregion Event Related
 
@@ -207,11 +178,11 @@ namespace ManagedWifi
                             goto Label_0194;
 
                         case 13:
-                            _interfaceArrivedEvent.Raise(this, new InterfaceNotificationEventsArgs(notifyData.interfaceGuid));
+                            InterfaceArrivedEvent.Raise(this, new InterfaceNotificationEventsArgs(notifyData.interfaceGuid));
                             goto Label_0194;
 
                         case 14:
-                            _interfaceRemovedEvent.Raise(this, new InterfaceNotificationEventsArgs(notifyData.interfaceGuid));
+                            InterfaceRemovedEvent.Raise(this, new InterfaceNotificationEventsArgs(notifyData.interfaceGuid));
                             goto Label_0194;
                     }
                     break;
