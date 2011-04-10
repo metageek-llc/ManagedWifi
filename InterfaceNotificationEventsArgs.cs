@@ -23,7 +23,7 @@ namespace ManagedWifi
     {
         #region Fields
 
-        public Guid MyGuid;
+        public Guid ItsGuid;
 
         #endregion Fields
 
@@ -31,7 +31,7 @@ namespace ManagedWifi
 
         public InterfaceNotificationEventsArgs(Guid id)
         {
-            MyGuid = id;
+            ItsGuid = id;
         }
 
         #endregion Constructors

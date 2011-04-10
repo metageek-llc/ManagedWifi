@@ -84,7 +84,7 @@ namespace ManagedWifi
             }
         }
 
-        public IntPtr MyClientHandle
+        public IntPtr ItsClientHandle
         {
             get { return _clientHandle; }
         }

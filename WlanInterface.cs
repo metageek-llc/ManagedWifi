@@ -59,7 +59,7 @@ namespace ManagedWifi
                 IntPtr ptr;
                 Wlan.WlanOpcodeValueType type;
                 Wlan.WlanConnectionAttributes attributes = new Wlan.WlanConnectionAttributes();
-                int code = Wlan.WlanQueryInterface(_client.MyClientHandle, _info.interfaceGuid,
+                int code = Wlan.WlanQueryInterface(_client.ItsClientHandle, _info.interfaceGuid,
                                                    Wlan.WlanIntfOpcode.CurrentConnection, IntPtr.Zero, out num,
                                                    out ptr, out type);
                 // 0x0000139F is the code returned when not connected
@@ -248,14 +248,14 @@ namespace ManagedWifi
 
         public void DeleteProfile(string profileName)
         {
-            Wlan.ThrowIfError(Wlan.WlanDeleteProfile(_client.MyClientHandle, _info.interfaceGuid, profileName, IntPtr.Zero));
+            Wlan.ThrowIfError(Wlan.WlanDeleteProfile(_client.ItsClientHandle, _info.interfaceGuid, profileName, IntPtr.Zero));
         }
 
         public IEnumerable<Wlan.WlanAvailableNetwork> GetAvailableNetworkList(Wlan.WlanGetAvailableNetworkFlags flags)
         {
             IntPtr ptr;
             Wlan.WlanAvailableNetwork[] networkArray;
-            Wlan.ThrowIfError(Wlan.WlanGetAvailableNetworkList(_client.MyClientHandle, _info.interfaceGuid, flags, IntPtr.Zero, out ptr));
+            Wlan.ThrowIfError(Wlan.WlanGetAvailableNetworkList(_client.ItsClientHandle, _info.interfaceGuid, flags, IntPtr.Zero, out ptr));
             try
             {
                 networkArray = ConvertAvailableNetworkListPtr(ptr);
@@ -271,7 +271,7 @@ namespace ManagedWifi
         {
             IntPtr ptr;
             Wlan.WlanBssEntryN[] entryArray;
-            Wlan.ThrowIfError(Wlan.WlanGetNetworkBssList(_client.MyClientHandle, _info.interfaceGuid, IntPtr.Zero, Wlan.Dot11BssType.Any, false, IntPtr.Zero, out ptr));
+            Wlan.ThrowIfError(Wlan.WlanGetNetworkBssList(_client.ItsClientHandle, _info.interfaceGuid, IntPtr.Zero, Wlan.Dot11BssType.Any, false, IntPtr.Zero, out ptr));
             try
             {
                 entryArray = ConvertBssListPtr(ptr);
@@ -291,7 +291,7 @@ namespace ManagedWifi
             try
             {
                 IntPtr ptr2;
-                Wlan.ThrowIfError(Wlan.WlanGetNetworkBssList(_client.MyClientHandle, _info.interfaceGuid, ptr, bssType, securityEnabled, IntPtr.Zero, out ptr2));
+                Wlan.ThrowIfError(Wlan.WlanGetNetworkBssList(_client.ItsClientHandle, _info.interfaceGuid, ptr, bssType, securityEnabled, IntPtr.Zero, out ptr2));
                 try
                 {
                     entryArray = ConvertBssListPtr(ptr2);
@@ -312,7 +312,7 @@ namespace ManagedWifi
         {
             IntPtr ptr;
             Wlan.WlanProfileInfo[] infoArray2;
-            Wlan.ThrowIfError(Wlan.WlanGetProfileList(_client.MyClientHandle, _info.interfaceGuid, IntPtr.Zero, out ptr));
+            Wlan.ThrowIfError(Wlan.WlanGetProfileList(_client.ItsClientHandle, _info.interfaceGuid, IntPtr.Zero, out ptr));
             try
             {
                 Wlan.WlanProfileInfoListHeader structure = (Wlan.WlanProfileInfoListHeader)Marshal.PtrToStructure(ptr, typeof(Wlan.WlanProfileInfoListHeader));
@@ -339,7 +339,7 @@ namespace ManagedWifi
             Wlan.WlanProfileFlags flags;
             Wlan.WlanAccess access;
             string str;
-            Wlan.ThrowIfError(Wlan.WlanGetProfile(_client.MyClientHandle, _info.interfaceGuid, profileName, IntPtr.Zero, out ptr, out flags, out access));
+            Wlan.ThrowIfError(Wlan.WlanGetProfile(_client.ItsClientHandle, _info.interfaceGuid, profileName, IntPtr.Zero, out ptr, out flags, out access));
             try
             {
                 str = Marshal.PtrToStringUni(ptr);
@@ -353,13 +353,13 @@ namespace ManagedWifi
 
         public void Scan()
         {
-            Wlan.ThrowIfError(Wlan.WlanScan(_client.MyClientHandle, _info.interfaceGuid, IntPtr.Zero, IntPtr.Zero, IntPtr.Zero));
+            Wlan.ThrowIfError(Wlan.WlanScan(_client.ItsClientHandle, _info.interfaceGuid, IntPtr.Zero, IntPtr.Zero, IntPtr.Zero));
         }
 
         public Wlan.WlanReasonCode SetProfile(Wlan.WlanProfileFlags flags, string profileXml, bool overwrite)
         {
             Wlan.WlanReasonCode code;
-            Wlan.ThrowIfError(Wlan.WlanSetProfile(_client.MyClientHandle, _info.interfaceGuid, flags, profileXml, null, overwrite, IntPtr.Zero, out code));
+            Wlan.ThrowIfError(Wlan.WlanSetProfile(_client.ItsClientHandle, _info.interfaceGuid, flags, profileXml, null, overwrite, IntPtr.Zero, out code));
             return code;
         }
 
@@ -369,7 +369,7 @@ namespace ManagedWifi
 
         private void Connect(Wlan.WlanConnectionParameters connectionParams)
         {
-            Wlan.ThrowIfError(Wlan.WlanConnect(_client.MyClientHandle, _info.interfaceGuid, ref connectionParams, IntPtr.Zero));
+            Wlan.ThrowIfError(Wlan.WlanConnect(_client.ItsClientHandle, _info.interfaceGuid, ref connectionParams, IntPtr.Zero));
         }
 
         private void Connect(Wlan.WlanConnectionMode connectionMode, Wlan.Dot11BssType bssType, string profile)
@@ -448,7 +448,7 @@ namespace ManagedWifi
             int num;
             Wlan.WlanOpcodeValueType type;
             int num2;
-            Wlan.ThrowIfError(Wlan.WlanQueryInterface(_client.MyClientHandle, _info.interfaceGuid, opCode, IntPtr.Zero, out num, out ptr, out type));
+            Wlan.ThrowIfError(Wlan.WlanQueryInterface(_client.ItsClientHandle, _info.interfaceGuid, opCode, IntPtr.Zero, out num, out ptr, out type));
             try
             {
                 num2 = Marshal.ReadInt32(ptr);
@@ -510,7 +510,7 @@ namespace ManagedWifi
             Marshal.WriteInt32(ptr, value);
             try
             {
-                Wlan.ThrowIfError(Wlan.WlanSetInterface(_client.MyClientHandle, _info.interfaceGuid, opCode, 4, ptr, IntPtr.Zero));
+                Wlan.ThrowIfError(Wlan.WlanSetInterface(_client.ItsClientHandle, _info.interfaceGuid, opCode, 4, ptr, IntPtr.Zero));
             }
             finally
             {
