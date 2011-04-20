@@ -515,7 +515,7 @@ namespace ManagedWifi
         public class WlanBssEntryN
         {
             public WlanBssEntry BaseEntry;
-            public IeParser.TypeNSettings NSettings;
+            public byte[] IEs;
 
             public WlanBssEntryN(WlanBssEntry bssEntry)
             {
