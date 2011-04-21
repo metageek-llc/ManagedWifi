@@ -1,17 +1,15 @@
 ﻿using System;
 using System.Net.NetworkInformation;
 
-using ManagedWifi;
-
 namespace ManagedWifi
 {
     class SudoInterface : NetworkInterface
     {
         #region Fields
 
-        private string _desc;
-        private string _id;
-        private string _name;
+        private readonly string _desc;
+        private readonly string _id;
+        private readonly string _name;
 
         #endregion Fields
 
@@ -64,8 +62,6 @@ namespace ManagedWifi
         public SudoInterface(WlanInterface wlan)
         {
             _id = wlan.InterfaceGuid.ToString();
-            //Calling InterfaceName cuases an infinite loop
-            //_name = wlan.InterfaceName;
             _desc = wlan.InterfaceDescription;
         }
 
@@ -82,14 +78,12 @@ namespace ManagedWifi
 
         public override IPInterfaceProperties GetIPProperties()
         {
-            //throw new NotImplementedException();
             return null;
         }
 
         public override IPv4InterfaceStatistics GetIPv4Statistics()
         {
             throw new NotImplementedException();
-            //return null;
         }
 
         public override PhysicalAddress GetPhysicalAddress()
