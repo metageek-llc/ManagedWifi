@@ -1,0 +1,3 @@
+[submodule "tools"]
+	path = tools
+	url = git@metageek.unfuddle.com:metageek/toolsdir.git
