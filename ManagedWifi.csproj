@@ -143,7 +143,6 @@
     <Compile Include="AssemblyInfo.cs">
       <SubType>Code</SubType>
     </Compile>
-    <Compile Include="IEParser.cs" />
     <Compile Include="InterfaceNotificationEventsArgs.cs" />
     <Compile Include="SudoInterface.cs" />
     <Compile Include="Wlan.cs" />
