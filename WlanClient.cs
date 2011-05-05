@@ -20,8 +20,10 @@
 
 using System;
 using System.Collections.Generic;
+using System.ComponentModel;
 using System.Runtime.InteropServices;
 using System.Text;
+
 using MetaGeek.Diagnostics;
 
 namespace ManagedWifi
@@ -33,7 +35,6 @@ namespace ManagedWifi
         private readonly IntPtr _clientHandle;
         private readonly Dictionary<Guid, WlanInterface> _ifaces = new Dictionary<Guid, WlanInterface>();
         private uint _negotiatedVersion;
-        private readonly Wlan.WlanNotificationCallbackDelegate _wlanNotificationCallback;
 
         #endregion Fields
 
@@ -89,30 +90,43 @@ namespace ManagedWifi
             get { return _clientHandle; }
         }
 
+        private Logger ItsLogger
+        {
+            get; set;
+        }
+
+        private Wlan.WlanNotificationCallbackDelegate WlanNotificationCallback
+        {
+            get; set;
+        }
+
         #endregion Properties
 
-        #region Event Related
-
+        #region Event Fields
 
         public RegisteredEventHandler<InterfaceNotificationEventsArgs> InterfaceArrivedEvent = new RegisteredEventHandler<InterfaceNotificationEventsArgs>();
         public RegisteredEventHandler<InterfaceNotificationEventsArgs> InterfaceRemovedEvent = new RegisteredEventHandler<InterfaceNotificationEventsArgs>();
 
-        #endregion Event Related
+        #endregion Event Fields
 
         #region Constructors
 
         public WlanClient()
         {
-            Wlan.ThrowIfError(Wlan.WlanOpenHandle(1, IntPtr.Zero, out _negotiatedVersion, out _clientHandle));
+            ItsLogger = new Logger(this);
+
             try
             {
+                Wlan.ThrowIfError(Wlan.WlanOpenHandle(1, IntPtr.Zero, out _negotiatedVersion, out _clientHandle));
+                WlanNotificationCallback = new Wlan.WlanNotificationCallbackDelegate(OnWlanNotification);
+
                 Wlan.WlanNotificationSource source;
-                _wlanNotificationCallback = new Wlan.WlanNotificationCallbackDelegate(OnWlanNotification);
-                Wlan.ThrowIfError(Wlan.WlanRegisterNotification(_clientHandle, Wlan.WlanNotificationSource.All, false, _wlanNotificationCallback, IntPtr.Zero, IntPtr.Zero, out source));
+                Wlan.ThrowIfError(Wlan.WlanRegisterNotification(_clientHandle, Wlan.WlanNotificationSource.All, false, WlanNotificationCallback, IntPtr.Zero, IntPtr.Zero, out source));
             }
-            catch
+            catch (Win32Exception ex)
             {
                 Wlan.WlanCloseHandle(_clientHandle, IntPtr.Zero);
+                ItsLogger.Warn(ex.Message);
                 throw;
             }
         }
