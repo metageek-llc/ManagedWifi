@@ -1,3 +1,4 @@
+*.vs10x
 *.user
 bin
 obj
