@@ -11,5 +11,5 @@
 [assembly: System.Reflection.AssemblyTrademark("")]
 [assembly: System.Runtime.InteropServices.ComVisible(false)]
 [assembly: System.Runtime.InteropServices.Guid("e7646a9f-2d07-455a-b9ae-51eaf7281d2f")]
-[assembly: System.Reflection.AssemblyFileVersion("1.1.0.0815")]
+[assembly: System.Reflection.AssemblyFileVersion("1.1.0.1024")]
 [assembly: System.Diagnostics.Debuggable(System.Diagnostics.DebuggableAttribute.DebuggingModes.IgnoreSymbolStoreSequencePoints)]
