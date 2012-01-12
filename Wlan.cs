@@ -44,8 +44,9 @@ namespace ManagedWifi
             IEEE80211_SharedKey = 2,
             IHV_End = 0xffffffff,
             IHV_Start = 0x80000000,
-            RSNA = 6,
-            RSNA_PSK = 7,
+            // RSNA -> WPA2
+            WPA2 = 6,
+            WPA2_PSK = 7,
             WPA = 3,
             WPA_None = 5,
             WPA_PSK = 4
@@ -60,12 +61,15 @@ namespace ManagedWifi
 
         public enum Dot11CipherAlgorithm : uint
         {
-            CCMP = 4,
+            // CCMP -> Enterprise
+            Enterprise = 4,
             IHV_End = 0xffffffff,
             IHV_Start = 0x80000000,
-            None = 0,
+            // None -> Open
+            Open = 0,
             RSN_UseGroup = 0x100,
-            TKIP = 2,
+            // TKIP -> Personal
+            Personal = 2,
             WEP = 0x101,
             WEP104 = 5,
             WEP40 = 1,
