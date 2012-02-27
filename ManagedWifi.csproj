@@ -102,10 +102,6 @@
     <ErrorReport>prompt</ErrorReport>
   </PropertyGroup>
   <ItemGroup>
-    <Reference Include="MetaGeek.Diagnostics, Version=1.0.5.815, Culture=neutral, processorArchitecture=MSIL">
-      <SpecificVersion>False</SpecificVersion>
-      <HintPath>..\lib\MetaGeek.Diagnostics.dll</HintPath>
-    </Reference>
     <Reference Include="System">
       <Name>System</Name>
     </Reference>
@@ -152,6 +148,16 @@
       <ProductName>.NET Framework 3.5 SP1</ProductName>
       <Install>false</Install>
     </BootstrapperPackage>
+  </ItemGroup>
+  <ItemGroup>
+    <ProjectReference Include="..\MetaGeek.Diagnostics\MetaGeek.Diagnostics\MetaGeek.Diagnostics.csproj">
+      <Project>{B530C01F-329D-4904-9452-3D01FA158102}</Project>
+      <Name>MetaGeek.Diagnostics</Name>
+    </ProjectReference>
+    <ProjectReference Include="..\MetaGeek\MetaGeek\MetaGeek.csproj">
+      <Project>{0CB905AB-2DD9-4283-8836-8BAFC81ACA2A}</Project>
+      <Name>MetaGeek</Name>
+    </ProjectReference>
   </ItemGroup>
   <Import Project="$(MSBuildBinPath)\Microsoft.CSharp.targets" />
   <PropertyGroup>
