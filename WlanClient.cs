@@ -24,6 +24,7 @@ using System.ComponentModel;
 using System.Runtime.InteropServices;
 using System.Text;
 using MetaGeek.Diagnostics;
+using MetaGeek.Diagnostics.Event;
 
 
 namespace ManagedWifi
@@ -49,13 +50,13 @@ namespace ManagedWifi
                 Wlan.ThrowIfError(Wlan.WlanEnumInterfaces(_clientHandle, IntPtr.Zero, out ptr));
                 try
                 {
-                    Wlan.WlanInterfaceInfoListHeader structure = (Wlan.WlanInterfaceInfoListHeader) Marshal.PtrToStructure(ptr, typeof(Wlan.WlanInterfaceInfoListHeader));
+                    Wlan.WlanInterfaceInfoListHeader structure = (Wlan.WlanInterfaceInfoListHeader)Marshal.PtrToStructure(ptr, typeof(Wlan.WlanInterfaceInfoListHeader));
                     long num = ptr.ToInt64() + Marshal.SizeOf(structure);
                     WlanInterface[] interfaceArray = new WlanInterface[structure.numberOfItems];
                     List<Guid> list = new List<Guid>();
                     for (int i = 0; i < structure.numberOfItems; i++)
                     {
-                        Wlan.WlanInterfaceInfo info = (Wlan.WlanInterfaceInfo) Marshal.PtrToStructure(new IntPtr(num), typeof(Wlan.WlanInterfaceInfo));
+                        Wlan.WlanInterfaceInfo info = (Wlan.WlanInterfaceInfo)Marshal.PtrToStructure(new IntPtr(num), typeof(Wlan.WlanInterfaceInfo));
                         num += Marshal.SizeOf(info);
                         list.Add(info.interfaceGuid);
                         WlanInterface interface2 = _ifaces.ContainsKey(info.interfaceGuid) ? _ifaces[info.interfaceGuid] : new WlanInterface(this, info);
@@ -92,12 +93,14 @@ namespace ManagedWifi
 
         private Logger ItsLogger
         {
-            get; set;
+            get;
+            set;
         }
 
         private Wlan.WlanNotificationCallbackDelegate WlanNotificationCallback
         {
-            get; set;
+            get;
+            set;
         }
 
         #endregion Properties
@@ -162,7 +165,7 @@ namespace ManagedWifi
                         case 8:
                             if (notifyData.dataSize >= Marshal.SizeOf(0))
                             {
-                                Wlan.WlanReasonCode reasonCode = (Wlan.WlanReasonCode) Marshal.ReadInt32(notifyData.dataPtr);
+                                Wlan.WlanReasonCode reasonCode = (Wlan.WlanReasonCode)Marshal.ReadInt32(notifyData.dataPtr);
                                 if (interface2 != null)
                                 {
                                     interface2.OnWlanReason(notifyData, reasonCode);
@@ -175,14 +178,14 @@ namespace ManagedWifi
                         case 11:
                         case 20:
                         case 0x15:
-                        {
-                            Wlan.WlanConnectionNotificationData? nullable = ParseWlanConnectionNotification(ref notifyData);
-                            if (nullable.HasValue && (interface2 != null))
                             {
-                                interface2.OnWlanConnection(notifyData, nullable.Value);
+                                Wlan.WlanConnectionNotificationData? nullable = ParseWlanConnectionNotification(ref notifyData);
+                                if (nullable.HasValue && (interface2 != null))
+                                {
+                                    interface2.OnWlanConnection(notifyData, nullable.Value);
+                                }
+                                goto Label_0194;
                             }
-                            goto Label_0194;
-                        }
                         case 12:
                         case 15:
                         case 0x10:
@@ -215,21 +218,21 @@ namespace ManagedWifi
                         case 11:
                         case 12:
                         case 13:
-                        {
-                            Wlan.WlanConnectionNotificationData? nullable2 = ParseWlanConnectionNotification(ref notifyData);
-                            if (nullable2.HasValue && (interface2 != null))
                             {
-                                interface2.OnWlanConnection(notifyData, nullable2.Value);
+                                Wlan.WlanConnectionNotificationData? nullable2 = ParseWlanConnectionNotification(ref notifyData);
+                                if (nullable2.HasValue && (interface2 != null))
+                                {
+                                    interface2.OnWlanConnection(notifyData, nullable2.Value);
+                                }
+                                goto Label_0194;
                             }
-                            goto Label_0194;
-                        }
                         case 7:
                         case 8:
                             goto Label_0194;
                     }
                     goto Label_0194;
             }
-            Label_0194:
+        Label_0194:
             if (interface2 != null)
             {
                 interface2.OnWlanNotification(notifyData);
@@ -243,7 +246,7 @@ namespace ManagedWifi
             {
                 return null;
             }
-            Wlan.WlanConnectionNotificationData data = (Wlan.WlanConnectionNotificationData) Marshal.PtrToStructure(notifyData.dataPtr, typeof(Wlan.WlanConnectionNotificationData));
+            Wlan.WlanConnectionNotificationData data = (Wlan.WlanConnectionNotificationData)Marshal.PtrToStructure(notifyData.dataPtr, typeof(Wlan.WlanConnectionNotificationData));
             if (data.wlanReasonCode == Wlan.WlanReasonCode.Success)
             {
                 IntPtr ptr = new IntPtr(notifyData.dataPtr.ToInt64() + Marshal.OffsetOf(typeof(Wlan.WlanConnectionNotificationData), "profileXml").ToInt64());
