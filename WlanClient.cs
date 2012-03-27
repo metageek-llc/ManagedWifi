@@ -26,7 +26,6 @@ using System.Text;
 using MetaGeek.Diagnostics;
 using MetaGeek.Diagnostics.Event;
 
-
 namespace ManagedWifi
 {
     public class WlanClient
