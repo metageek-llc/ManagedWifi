@@ -59,6 +59,9 @@
     <BootstrapperEnabled>true</BootstrapperEnabled>
   </PropertyGroup>
   <ItemGroup>
+    <Reference Include="MetaGeek.Diagnostics">
+      <HintPath>..\lib\MetaGeek.Diagnostics.dll</HintPath>
+    </Reference>
     <Reference Include="System">
       <Name>System</Name>
     </Reference>
@@ -103,12 +106,6 @@
       <ProductName>.NET Framework 3.5 SP1</ProductName>
       <Install>false</Install>
     </BootstrapperPackage>
-  </ItemGroup>
-  <ItemGroup>
-    <ProjectReference Include="..\MetaGeek.Diagnostics\MetaGeek.Diagnostics\MetaGeek.Diagnostics\MetaGeek.Diagnostics.csproj">
-      <Project>{B530C01F-329D-4904-9452-3D01FA158102}</Project>
-      <Name>MetaGeek.Diagnostics</Name>
-    </ProjectReference>
   </ItemGroup>
   <Import Project="$(MSBuildBinPath)\Microsoft.CSharp.targets" />
   <PropertyGroup>
