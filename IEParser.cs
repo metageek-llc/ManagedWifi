@@ -52,18 +52,12 @@ namespace ManagedWifi
                 switch (informationElement.ItsNumber)
                 {
                     case 45: //HT Capabilities
-                        ParseHTCapabilities(informationElement, ref settings);
+                        ParseHTCapabilities(informationElement, settings);
                         returnNull = false;
                         break;
                     case 61: //HT Information
                         ParseHTOperation(informationElement, settings);
                         returnNull = false;
-                        break;
-                    case 191: //VHT Capabilities
-                        ParseVHTCapabilities(informationElement, ref settings);
-                        break;
-                    case 192: //VHT Operation
-                        ParseVHTOperation(informationElement, ref settings);
                         break;
                 }
             }
@@ -71,12 +65,46 @@ namespace ManagedWifi
             return returnNull ? null : settings;
         }
 
-        private static void ParseVHTOperation(InformationElement ie, ref TypeNSettings settings)
+        public static TypeACSettings ParseAC(byte[] ies)
+        {
+
+            var informationElements = BuildInformationElements(ies);
+            var settings = new TypeACSettings();
+            bool returnNull = true;
+
+            foreach (var informationElement in informationElements)
+            {
+                switch (informationElement.ItsNumber)
+                {
+                    case 45: //HT Capabilities
+                        ParseHTCapabilities(informationElement, settings);
+                        returnNull = false;
+                        break;
+                    case 61: //HT Information
+                        ParseHTOperation(informationElement, settings);
+                        returnNull = false;
+                        break;
+                    case 191: //VHT Capabilities
+                        ParseVHTCapabilities(informationElement, settings);
+                        break;
+                    case 192: //VHT Operation
+                        ParseVHTOperation(informationElement, settings);
+                        break;
+                }
+            }
+
+            return returnNull ? null : settings;
+        }
+
+
+
+        private static void ParseVHTOperation(InformationElement ie, TypeNSettings settings)
         {
         }
 
-        private static void ParseVHTCapabilities(InformationElement ie, ref TypeNSettings settings)
+        private static void ParseVHTCapabilities(InformationElement ie, TypeNSettings settings)
         {
+
         }
 
         private static void ParseHTOperation(InformationElement ie, TypeNSettings settings)
@@ -95,7 +123,7 @@ namespace ManagedWifi
                 settings.Is40Mhz = (ie.ItsData[subset1] & 0x03) == 0x03 || (ie.ItsData[subset1] & 0x01) == 0x01;
         }
 
-        private static void ParseHTCapabilities(InformationElement ie, ref TypeNSettings settings)
+        private static void ParseHTCapabilities(InformationElement ie, TypeNSettings settings)
         {
             settings.Is40Mhz = ((ie.ItsData[0] & 0x02) == 0x02);
 
@@ -191,6 +219,12 @@ namespace ManagedWifi
                 return false;
             }
         }
+
+        public class TypeACSettings : TypeNSettings
+        {
+
+        }
+
 
         #endregion Public Methods
 
@@ -310,4 +344,6 @@ namespace ManagedWifi
 
         #endregion Private Methods
     }
+
+    
 }
