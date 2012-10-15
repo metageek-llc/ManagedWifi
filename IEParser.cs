@@ -24,91 +24,127 @@
 using System;
 using System.Collections;
 using System.Collections.Generic;
+using System.IO;
 
 namespace ManagedWifi
 {
     public static class IeParser
     {
+
+        public struct InformationElement
+        {
+            public ushort ItsNumber { get; set; } 
+            public ushort ItsLength { get; set; } 
+            public byte[] ItsData { get; set; } 
+        }
+
         #region Public Methods
 
         public static TypeNSettings Parse(byte[] ies)
         {
-            //The indexes for both elements
-            int HtCapIndex = -1;
-            int HtInfoIndex = -1;
 
+            var informationElements = BuildInformationElements(ies);
+            var settings = new TypeNSettings();
             bool returnNull = true;
 
-            //Look for the HT Capabilities element
-            for (int i = 0; i < ies.Length - 31; i++)
+            foreach (var informationElement in informationElements)
             {
-                //HT Capabilities's signature is 2D 1A
-                if ((ies[i] == 0x2D && ies[i + 1] == 0x1A) && (ies.Length >= i + 27))
+                switch (informationElement.ItsNumber)
                 {
-                    //Found it
-                    HtCapIndex = i;
+                    case 45: //HT Capabilities
+                        ParseHTCapabilities(informationElement, ref settings);
+                        returnNull = false;
+                        break;
+                    case 61: //HT Information
+                        ParseHTOperation(informationElement, settings);
+                        returnNull = false;
+                        break;
+                    case 191: //VHT Capabilities
+                        ParseVHTCapabilities(informationElement, ref settings);
+                        break;
+                    case 192: //VHT Operation
+                        ParseVHTOperation(informationElement, ref settings);
+                        break;
                 }
-
-                //HT Information's signature is 3D 16
-                if ((ies[i] == 0x3D && ies[i + 1] == 0x16) && (ies.Length >= i + 24))
-                {
-                    //Found it
-                    HtInfoIndex = i;
-                }
-            }
-
-            TypeNSettings settings = new TypeNSettings();
-
-            //Parse the info blocks if we found them
-            if (HtCapIndex > -1)
-            {
-                settings.Is40Mhz = ((ies[HtCapIndex + 2] & 0x02) == 0x02);
-
-                settings.ShortGi20MHz = (ies[HtCapIndex + 2] & 0x20) == 0x20;
-                settings.ShortGi40MHz = (ies[HtCapIndex + 2] & 0x40) == 0x40;
-
-                //Get supported MCS indexes
-                //1 bit per index
-
-                byte[] bits = new byte[4];
-                //Array.ConstrainedCopy(ies, index + 5, bits, 0, 4);
-                Array.Copy(ies, HtCapIndex + 5, bits, 0, 4);
-
-                BitArray b = new BitArray(bits);
-                //settings.Rates = new List<double>();
-
-                //The MCS indexes are in little endian,
-                //so this loop will start at the lowest rates
-                for (int i = 0; i < b.Length; i++)
-                {
-                    //If the MCS index bit is 0, skip it
-                    if (b[i] == false) continue;
-
-                    //Add the rate
-                    settings.Rates.Add(McsSet.GetSpeed((uint)i, settings.ShortGi20MHz, settings.ShortGi40MHz,
-                                                       settings.Is40Mhz));
-                }
-
-                returnNull = false;
-            }
-
-            if (HtInfoIndex > -1)
-            {
-                //Primary channel
-                settings.PrimaryChannel = ies[HtInfoIndex + 2];
-
-                //Secondary channel location
-                settings.SecondaryChannelLower = (ies[HtInfoIndex + 3] & 0x03) == 0x03;
-
-                //Check if there is no secondary channel and set 40MHz to false
-                if (settings.Is40Mhz)
-                    settings.Is40Mhz = (ies[HtInfoIndex + 3] & 0x03) == 0x03 || (ies[HtInfoIndex + 3] & 0x01) == 0x01;
-
-                returnNull = false;
             }
 
             return returnNull ? null : settings;
         }
+
+        private static void ParseVHTOperation(InformationElement ie, ref TypeNSettings settings)
+        {
+        }
+
+        private static void ParseVHTCapabilities(InformationElement ie, ref TypeNSettings settings)
+        {
+        }
+
+        private static void ParseHTOperation(InformationElement ie, TypeNSettings settings)
+        {
+            const int channel = 0;
+            const int subset1 = 1;
+
+            //Primary channel
+            settings.PrimaryChannel = ie.ItsData[0]; 
+
+            //Secondary channel location
+            settings.SecondaryChannelLower = (ie.ItsData[channel] & 0x03) == 0x03;
+
+            //Check if there is no secondary channel and set 40MHz to false
+            if (settings.Is40Mhz)
+                settings.Is40Mhz = (ie.ItsData[subset1] & 0x03) == 0x03 || (ie.ItsData[subset1] & 0x01) == 0x01;
+        }
+
+        private static void ParseHTCapabilities(InformationElement ie, ref TypeNSettings settings)
+        {
+            settings.Is40Mhz = ((ie.ItsData[0] & 0x02) == 0x02);
+
+            settings.ShortGi20MHz = (ie.ItsData[0] & 0x20) == 0x20;
+            settings.ShortGi40MHz = (ie.ItsData[0] & 0x40) == 0x40;
+
+            //Get supported MCS indexes 
+            //1 bit per index
+
+            byte[] bits = new byte[4];
+            //Array.ConstrainedCopy(ies, index + 5, bits, 0, 4);
+            Array.Copy(ie.ItsData, 4, bits, 0, 4);
+
+            BitArray b = new BitArray(bits);
+            //settings.Rates = new List<double>();
+
+            //The MCS indexes are in little endian,
+            //so this loop will start at the lowest rates
+            for (int i = 0; i < b.Length; i++)
+            {
+                   //If the MCS index bit is 0, skip it
+                if (b[i] == false) continue;
+
+                //Add the rate
+                settings.Rates.Add(McsSet.GetSpeed((uint) i, settings.ShortGi20MHz, settings.ShortGi40MHz,
+                                                   settings.Is40Mhz));
+            }
+        }
+
+        private static IEnumerable<InformationElement> BuildInformationElements(byte[] ies)
+        {
+            var informationElements = new List<InformationElement>();
+
+            var index = 0;
+
+            while (index < ies.Length)
+            {
+                var ie = new InformationElement();
+                ie.ItsNumber = ies[index];
+                ie.ItsLength = ies[index + 1];
+                ie.ItsData = new byte[ie.ItsLength];
+                Array.Copy(ies, index + 2, ie.ItsData, 0, ie.ItsLength);
+
+                informationElements.Add(ie);
+                index += ie.ItsLength + 2;
+            }
+            return informationElements;
+        }
+
 
         public class TypeNSettings
         {
