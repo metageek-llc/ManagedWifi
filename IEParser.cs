@@ -24,6 +24,7 @@
 using System;
 using System.Collections;
 using System.Collections.Generic;
+using System.Globalization;
 using System.IO;
 
 namespace ManagedWifi
@@ -98,13 +99,51 @@ namespace ManagedWifi
 
 
 
-        private static void ParseVHTOperation(InformationElement ie, TypeNSettings settings)
+        private static void ParseVHTOperation(InformationElement ie, TypeACSettings settings)
         {
+            settings.Operations = new TypeACSettings.VHTOperations();
+
+            var operations = new byte[4];
+            Array.Copy(ie.ItsData, 0, operations, 0, 3);
+
+            var basicMCSSet = new byte[8];
+            Array.Copy(ie.ItsData, 3, basicMCSSet, 0, 2);
+
+            settings.Operations.ChannelWidth = 
+                (TypeACSettings.VHTOperations.VHTChannelWidth) Enum.Parse(
+                    typeof(TypeACSettings.VHTOperations.VHTChannelWidth), 
+                    operations[0].ToString(CultureInfo.InvariantCulture)
+                    );
         }
 
-        private static void ParseVHTCapabilities(InformationElement ie, TypeNSettings settings)
+        private static void ParseVHTCapabilities(InformationElement ie, TypeACSettings settings)
         {
+            settings.Capabilities = new TypeACSettings.VHTCapabilities();
 
+            var capabilities = new byte[4];
+            Array.Copy(ie.ItsData, 0, capabilities, 0, 4);
+
+            var supportedMCS = new byte[8];
+            Array.Copy(ie.ItsData, 4, supportedMCS, 0, 8);
+
+            var supportedChannelWidth = ( capabilities[0] & 0x0C ) >> 2;
+
+            switch (supportedChannelWidth)
+            {
+                case 1:
+                    settings.Capabilities.Supports160Mhz = true;
+                    break;
+                case 2:
+                    settings.Capabilities.Supports80Plus80Mhz = true;
+                    settings.Capabilities.Supports160Mhz = true;
+                    break;
+            }
+
+            settings.Capabilities. ShortGi160MHz = (capabilities[0] & 0x40) == 0x40;
+            settings.Capabilities.ShortGi80MHz = (capabilities[0] & 0x20) == 0x20;
+
+            settings.Capabilities.MaxRecieveRate = BitConverter.ToUInt16(supportedMCS, 2);
+            settings.Capabilities.MaxTransmitRate = BitConverter.ToUInt16(supportedMCS, 6);
         }
 
         private static void ParseHTOperation(InformationElement ie, TypeNSettings settings)
@@ -222,7 +261,31 @@ namespace ManagedWifi
 
         public class TypeACSettings : TypeNSettings
         {
+            public class VHTCapabilities
+            {
+                public bool ShortGi80MHz;
+                public bool ShortGi160MHz;
+                public bool Supports160Mhz;
+                public bool Supports80Plus80Mhz;
+                public ushort MaxRecieveRate;
+                public ushort MaxTransmitRate;
+            }
 
+            public class VHTOperations
+            {
+                public enum VHTChannelWidth : byte
+                {
+                    TwentyOrForty = 0x00,
+                    Eighty = 0x01,
+                    OneSixty = 0x02,
+                    EightyPlusEighty = 0x03
+                }
+
+                public VHTChannelWidth ChannelWidth;
+            }
+
+            public VHTCapabilities Capabilities { get; set; }
+            public VHTOperations Operations { get; set; }
         }
 
 
