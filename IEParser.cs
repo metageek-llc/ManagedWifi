@@ -114,6 +114,7 @@ namespace ManagedWifi
                     typeof(TypeACSettings.VHTOperations.VHTChannelWidth), 
                     operations[0].ToString(CultureInfo.InvariantCulture)
                     );
+
         }
 
         private static void ParseVHTCapabilities(InformationElement ie, TypeACSettings settings)
@@ -126,24 +127,19 @@ namespace ManagedWifi
             var supportedMCS = new byte[8];
             Array.Copy(ie.ItsData, 4, supportedMCS, 0, 8);
 
-            var supportedChannelWidth = ( capabilities[0] & 0x0C ) >> 2;
-
-            switch (supportedChannelWidth)
-            {
-                case 1:
-                    settings.Capabilities.Supports160Mhz = true;
-                    break;
-                case 2:
-                    settings.Capabilities.Supports80Plus80Mhz = true;
-                    settings.Capabilities.Supports160Mhz = true;
-                    break;
-            }
-
-            settings.Capabilities. ShortGi160MHz = (capabilities[0] & 0x40) == 0x40;
+            settings.Capabilities.ShortGi160MHz = (capabilities[0] & 0x40) == 0x40;
             settings.Capabilities.ShortGi80MHz = (capabilities[0] & 0x20) == 0x20;
 
             settings.Capabilities.MaxRecieveRate = BitConverter.ToUInt16(supportedMCS, 2);
             settings.Capabilities.MaxTransmitRate = BitConverter.ToUInt16(supportedMCS, 6);
+
+            var supportedChannelWidth = ( capabilities[0] & 0x0C ) >> 2;
+
+            settings.Capabilities.SupportedWidth =
+                (TypeACSettings.VHTCapabilities.VHTSupportedWidth)
+                Enum.Parse(typeof (TypeACSettings.VHTCapabilities.VHTSupportedWidth),
+                        supportedChannelWidth.ToString(CultureInfo.InvariantCulture)
+                    );
         }
 
         private static void ParseHTOperation(InformationElement ie, TypeNSettings settings)
@@ -263,12 +259,20 @@ namespace ManagedWifi
         {
             public class VHTCapabilities
             {
+                public enum VHTSupportedWidth
+                {
+                    Eighty = 0x00,
+                    OneSixty = 0x01,
+                    All  = 0x02
+                }
+
                 public bool ShortGi80MHz;
                 public bool ShortGi160MHz;
                 public bool Supports160Mhz;
                 public bool Supports80Plus80Mhz;
                 public ushort MaxRecieveRate;
                 public ushort MaxTransmitRate;
+                public VHTSupportedWidth SupportedWidth;
             }
 
             public class VHTOperations
