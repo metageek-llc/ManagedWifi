@@ -169,17 +169,15 @@ namespace ManagedWifi
             //1 bit per index
 
             byte[] bits = new byte[4];
-            //Array.ConstrainedCopy(ies, index + 5, bits, 0, 4);
-            Array.Copy(ie.ItsData, 4, bits, 0, 4);
+            Array.Copy(ie.ItsData, 3, bits, 0, 4);
 
             BitArray b = new BitArray(bits);
-            //settings.Rates = new List<double>();
 
             //The MCS indexes are in little endian,
             //so this loop will start at the lowest rates
             for (int i = 0; i < b.Length; i++)
             {
-                   //If the MCS index bit is 0, skip it
+                //If the MCS index bit is 0, skip it
                 if (b[i] == false) continue;
 
                 //Add the rate
