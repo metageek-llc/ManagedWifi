@@ -58,6 +58,9 @@
     <UseApplicationTrust>false</UseApplicationTrust>
     <BootstrapperEnabled>true</BootstrapperEnabled>
   </PropertyGroup>
+  <PropertyGroup>
+    <RootNamespace>ManagedWifi</RootNamespace>
+  </PropertyGroup>
   <ItemGroup>
     <Reference Include="MetaGeek.Diagnostics">
       <HintPath>..\lib\MetaGeek.Diagnostics.dll</HintPath>
