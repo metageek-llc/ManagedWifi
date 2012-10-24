@@ -268,8 +268,6 @@ namespace ManagedWifi
 
                 public bool ShortGi80MHz;
                 public bool ShortGi160MHz;
-                public bool Supports160Mhz;
-                public bool Supports80Plus80Mhz;
                 public ushort MaxRecieveRate;
                 public ushort MaxTransmitRate;
                 public VHTSupportedWidth SupportedWidth;
