@@ -106,7 +106,7 @@ namespace ManagedWifi
             var operations = new byte[4];
             Array.Copy(ie.ItsData, 0, operations, 0, 3);
 
-            var basicMCSSet = new byte[8];
+            var basicMCSSet = new byte[2];
             Array.Copy(ie.ItsData, 3, basicMCSSet, 0, 2);
 
             settings.Operations.ChannelWidth = 
@@ -114,6 +114,7 @@ namespace ManagedWifi
                     typeof(TypeACSettings.VHTOperations.VHTChannelWidth), 
                     operations[0].ToString(CultureInfo.InvariantCulture)
                     );
+
 
         }
 
@@ -140,6 +141,31 @@ namespace ManagedWifi
                 Enum.Parse(typeof (TypeACSettings.VHTCapabilities.VHTSupportedWidth),
                         supportedChannelWidth.ToString(CultureInfo.InvariantCulture)
                     );
+
+            var rxMCSMap = new byte[2];
+            Array.Copy(supportedMCS, 0, rxMCSMap, 0, 2);
+            var rxBits = new BitArray(rxMCSMap);
+
+            var txMCSMap = new byte[2];
+            Array.Copy(supportedMCS, 4, txMCSMap, 0, 2);
+            var txBits = new BitArray(txMCSMap);
+
+            for (ushort i = 0; i < txBits.Length; i += 2)
+            {
+                var MCSBit1 = txBits[i] | rxBits[i];
+                var MCSBit2 = txBits[i + 1] | rxBits[i + 1];
+
+                var maxMCS = 7;
+                maxMCS += MCSBit1 ? 1 : 0;
+                maxMCS += MCSBit2 ? 2 : 0;
+
+                if (maxMCS >= 10) continue;
+
+                for (ushort j = 0; j < maxMCS; j++)
+                {
+                    settings.Rates.Add(McsSet.GetVHTSpeed(j,i,settings.Capabilities.ShortGi80MHz, settings.Capabilities.ShortGi160MHz, settings.Capabilities.SupportedWidth));
+                }
+            }
         }
 
         private static void ParseHTOperation(InformationElement ie, TypeNSettings settings)
@@ -346,6 +372,88 @@ namespace ManagedWifi
                                                                 {6, 135f},
                                                                 {7, 150f}
                                                             };
+
+            //80MHz short GI
+            private static readonly Dictionary<uint, float> SGiTable80 = new Dictionary<uint, float>
+                                                                              {
+                                                                {0, 32.5f},
+                                                                {1, 65f},
+                                                                {2, 97.5f},
+                                                                {3, 130f},
+                                                                {4, 195f},
+                                                                {5, 260f},
+                                                                {6, 292.5f},
+                                                                {7, 325f},
+                                                                {8, 390f},
+                                                                {9, 433.3f}
+                                                            };
+
+            //80MHz short GI
+            private static readonly Dictionary<uint, float> LGiTable80 = new Dictionary<uint, float>
+                                                                              {
+                                                                {0, 29.3f},
+                                                                {1, 58.5f},
+                                                                {2, 87.8f},
+                                                                {3, 117f},
+                                                                {4, 175.5f},
+                                                                {5, 234f},
+                                                                {6, 263.3f},
+                                                                {7, 292.5f},
+                                                                {8, 351f},
+                                                                {9, 390f}
+                                                            };
+
+            //80MHz short GI
+            private static readonly Dictionary<uint, float> SGiTable160 = new Dictionary<uint, float>
+                                                                              {
+                                                                {0, 65f},
+                                                                {1, 130f},
+                                                                {2, 195f},
+                                                                {3, 260f},
+                                                                {4, 390f},
+                                                                {5, 520f},
+                                                                {6, 585f},
+                                                                {7, 650f},
+                                                                {8, 780f},
+                                                                {9, 866.7f}
+                                                            };
+
+            //80MHz short GI
+            private static readonly Dictionary<uint, float> LGiTable160 = new Dictionary<uint, float>
+                                                                              {
+                                                                {0, 29.3f},
+                                                                {1, 58.5f},
+                                                                {2, 87.8f},
+                                                                {3, 117f},
+                                                                {4, 175.5f},
+                                                                {5, 234f},
+                                                                {6, 263.3f},
+                                                                {7, 292.5f},
+                                                                {8, 351f},
+                                                                {9, 390f}
+                                                            };
+
+            public static float GetVHTSpeed(UInt16 index, UInt16 spatialStream, bool shortGi80MHz, bool shortGi160MHz, TypeACSettings.VHTCapabilities.VHTSupportedWidth  width)
+            {
+                float baseRate;
+                if (index > 9 || spatialStream > 8) return 0.0f;
+
+                switch (width)
+                {
+
+                    case TypeACSettings.VHTCapabilities.VHTSupportedWidth.Eighty:
+                        baseRate = shortGi80MHz ? SGiTable80[index] : LGiTable80[index];
+                        break;
+                    case TypeACSettings.VHTCapabilities.VHTSupportedWidth.OneSixty:
+                    case TypeACSettings.VHTCapabilities.VHTSupportedWidth.All:
+                        baseRate = shortGi160MHz ? SGiTable160[index] : LGiTable160[index];
+                        break;
+                    default:
+                        throw new ArgumentOutOfRangeException("width");
+                }
+
+                return baseRate * spatialStream;
+            }
 
             public static float GetSpeed(uint index, bool shortGi20MHz, bool shortGi40MHz, bool fortyMHz)
             {
