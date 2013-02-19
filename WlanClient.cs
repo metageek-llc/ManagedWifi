@@ -24,17 +24,19 @@ using System.ComponentModel;
 using System.Runtime.InteropServices;
 using System.Text;
 using MetaGeek.Diagnostics;
-using MetaGeek.Diagnostics.Event;
+using Microsoft.Practices.Prism.Events;
 
 namespace ManagedWifi
 {
     public class WlanClient
     {
+        private readonly IEventAggregator _eventAggregator;
+
         #region Fields
 
         private readonly IntPtr _clientHandle;
         private readonly Dictionary<Guid, WlanInterface> _ifaces = new Dictionary<Guid, WlanInterface>();
-        private uint _negotiatedVersion;
+        private readonly uint _negotiatedVersion;
 
         #endregion Fields
 
@@ -49,20 +51,20 @@ namespace ManagedWifi
                 Wlan.ThrowIfError(Wlan.WlanEnumInterfaces(_clientHandle, IntPtr.Zero, out ptr));
                 try
                 {
-                    Wlan.WlanInterfaceInfoListHeader structure = (Wlan.WlanInterfaceInfoListHeader)Marshal.PtrToStructure(ptr, typeof(Wlan.WlanInterfaceInfoListHeader));
+                    var structure = (Wlan.WlanInterfaceInfoListHeader)Marshal.PtrToStructure(ptr, typeof(Wlan.WlanInterfaceInfoListHeader));
                     long num = ptr.ToInt64() + Marshal.SizeOf(structure);
-                    WlanInterface[] interfaceArray = new WlanInterface[structure.numberOfItems];
-                    List<Guid> list = new List<Guid>();
+                    var interfaceArray = new WlanInterface[structure.numberOfItems];
+                    var list = new List<Guid>();
                     for (int i = 0; i < structure.numberOfItems; i++)
                     {
-                        Wlan.WlanInterfaceInfo info = (Wlan.WlanInterfaceInfo)Marshal.PtrToStructure(new IntPtr(num), typeof(Wlan.WlanInterfaceInfo));
+                        var info = (Wlan.WlanInterfaceInfo)Marshal.PtrToStructure(new IntPtr(num), typeof(Wlan.WlanInterfaceInfo));
                         num += Marshal.SizeOf(info);
                         list.Add(info.interfaceGuid);
                         WlanInterface interface2 = _ifaces.ContainsKey(info.interfaceGuid) ? _ifaces[info.interfaceGuid] : new WlanInterface(this, info);
                         interfaceArray[i] = interface2;
                         _ifaces[info.interfaceGuid] = interface2;
                     }
-                    Queue<Guid> queue = new Queue<Guid>();
+                    var queue = new Queue<Guid>();
                     foreach (Guid guid in _ifaces.Keys)
                     {
                         if (!list.Contains(guid))
@@ -104,23 +106,17 @@ namespace ManagedWifi
 
         #endregion Properties
 
-        #region Event Fields
-
-        public RegisteredEventHandler<InterfaceNotificationEventsArgs> InterfaceArrivedEvent = new RegisteredEventHandler<InterfaceNotificationEventsArgs>();
-        public RegisteredEventHandler<InterfaceNotificationEventsArgs> InterfaceRemovedEvent = new RegisteredEventHandler<InterfaceNotificationEventsArgs>();
-
-        #endregion Event Fields
-
         #region Constructors
 
-        public WlanClient()
+        public WlanClient(IEventAggregator eventAggregator)
         {
+            _eventAggregator = eventAggregator;
             ItsLogger = new Logger(this);
 
             try
             {
                 Wlan.ThrowIfError(Wlan.WlanOpenHandle(1, IntPtr.Zero, out _negotiatedVersion, out _clientHandle));
-                WlanNotificationCallback = new Wlan.WlanNotificationCallbackDelegate(OnWlanNotification);
+                WlanNotificationCallback = OnWlanNotification;
 
                 Wlan.WlanNotificationSource source;
                 Wlan.ThrowIfError(Wlan.WlanRegisterNotification(_clientHandle, Wlan.WlanNotificationSource.All, false, WlanNotificationCallback, IntPtr.Zero, IntPtr.Zero, out source));
@@ -144,7 +140,7 @@ namespace ManagedWifi
 
         public string GetStringForReasonCode(Wlan.WlanReasonCode reasonCode)
         {
-            StringBuilder stringBuffer = new StringBuilder(0x400);
+            var stringBuffer = new StringBuilder(0x400);
             Wlan.ThrowIfError(Wlan.WlanReasonCodeToString(reasonCode, stringBuffer.Capacity, stringBuffer, IntPtr.Zero));
             return stringBuffer.ToString();
         }
@@ -164,7 +160,7 @@ namespace ManagedWifi
                         case 8:
                             if (notifyData.dataSize >= Marshal.SizeOf(0))
                             {
-                                Wlan.WlanReasonCode reasonCode = (Wlan.WlanReasonCode)Marshal.ReadInt32(notifyData.dataPtr);
+                                var reasonCode = (Wlan.WlanReasonCode)Marshal.ReadInt32(notifyData.dataPtr);
                                 if (interface2 != null)
                                 {
                                     interface2.OnWlanReason(notifyData, reasonCode);
@@ -194,11 +190,13 @@ namespace ManagedWifi
                             goto Label_0194;
 
                         case 13:
-                            InterfaceArrivedEvent.Raise(this, new InterfaceNotificationEventsArgs(notifyData.interfaceGuid));
+                            _eventAggregator.GetEvent<InterfaceArrivedEvent>().Publish(
+                                new InterfaceNotificationEventsArgs(notifyData.interfaceGuid));
                             goto Label_0194;
 
                         case 14:
-                            InterfaceRemovedEvent.Raise(this, new InterfaceNotificationEventsArgs(notifyData.interfaceGuid));
+                            _eventAggregator.GetEvent<InterfaceRemovedEvent>().Publish(
+                                new InterfaceNotificationEventsArgs(notifyData.interfaceGuid));
                             goto Label_0194;
                     }
                     break;
@@ -245,15 +243,23 @@ namespace ManagedWifi
             {
                 return null;
             }
-            Wlan.WlanConnectionNotificationData data = (Wlan.WlanConnectionNotificationData)Marshal.PtrToStructure(notifyData.dataPtr, typeof(Wlan.WlanConnectionNotificationData));
+            var data = (Wlan.WlanConnectionNotificationData)Marshal.PtrToStructure(notifyData.dataPtr, typeof(Wlan.WlanConnectionNotificationData));
             if (data.wlanReasonCode == Wlan.WlanReasonCode.Success)
             {
-                IntPtr ptr = new IntPtr(notifyData.dataPtr.ToInt64() + Marshal.OffsetOf(typeof(Wlan.WlanConnectionNotificationData), "profileXml").ToInt64());
+                var ptr = new IntPtr(notifyData.dataPtr.ToInt64() + Marshal.OffsetOf(typeof(Wlan.WlanConnectionNotificationData), "profileXml").ToInt64());
                 data.profileXml = Marshal.PtrToStringUni(ptr);
             }
             return data;
         }
 
         #endregion Private Methods
+    }
+
+    public class InterfaceRemovedEvent : CompositePresentationEvent<InterfaceNotificationEventsArgs>
+    {
+    }
+
+    public class InterfaceArrivedEvent : CompositePresentationEvent<InterfaceNotificationEventsArgs>
+    {
     }
 }
