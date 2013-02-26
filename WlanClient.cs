@@ -65,13 +65,17 @@ namespace ManagedWifi
                         _ifaces[info.interfaceGuid] = interface2;
                     }
                     var queue = new Queue<Guid>();
-                    foreach (Guid guid in _ifaces.Keys)
+                    try
                     {
-                        if (!list.Contains(guid))
+                        foreach (Guid guid in _ifaces.Keys)
                         {
-                            queue.Enqueue(guid);
+                            if (!list.Contains(guid))
+                            {
+                                queue.Enqueue(guid);
+                            }
                         }
-                    }
+                    } catch (InvalidOperationException e)
+                    {}
                     while (queue.Count != 0)
                     {
                         Guid key = queue.Dequeue();
