@@ -726,7 +726,173 @@ namespace ManagedWifi
             private readonly Dot11AuthAlgorithm dot11AuthAlgorithm;
             private readonly Dot11CipherAlgorithm dot11CipherAlgorithm;
         }
-
+        
         #endregion Private Methods
+            
+    //--HostedNetwork--//
+    //TODO: Add documentation
+            
+    public enum HostedNetworkReason {
+      Success = 0,
+      Unspecified,
+      BadParameters,
+      ServiceShuttingDown,
+      InsufficientResources,
+      ElevationRequired,
+      ReadOnly,
+      PersistenceFailed,
+      CryptError,
+      Impersonation,
+      StopBeforeStart,
+
+      InterfaceAvailable,
+      InterfaceUnavailable,
+      MiniportStopped,
+      MiniportStarted,
+      IncompatibleConnectionStarted,
+      IncompatibleConnectionStopped,
+      UserAction,
+      ClientAbort,
+      ApStartFailed,
+
+      PeerArrived,
+      PeerDeparted,
+      PeerTimeout,
+      GpDenied,
+      ServiceUnavailable,
+      DeviceChange,
+      PropertiesChange,
+      VirtualStationBlockingUse,
+      AvailableOnVirtualStation,
+      }
+
+    public enum HostedNetworkPeerAuthState {
+      Invalid,
+      Authenticated
+      }
+
+    public enum Dot11RadioState {
+      Unknown = 0,
+      On,
+      Off
+      }
+
+    public enum HostedNetworkNotificationCode {
+      StateChange = 4096,
+      PeerStateChange,
+      RadioStateChange
+      }
+
+    public enum HostedNetworkState {
+      Unavaiable,
+      Idle,
+      Active
+      }
+
+    public enum HostedNetworkOpcode {
+      ConnectionSettings,
+      SecuritySettings,
+      StationProfile,
+      Enable
+      }
+
+    [StructLayout(LayoutKind.Sequential, CharSet = CharSet.Unicode)]
+    public struct WlanHostedNetworkPeerState {
+      [MarshalAs(UnmanagedType.ByValArray, SizeConst = 6)]
+      public byte[] PeerMacAddress;
+      public HostedNetworkPeerAuthState PeerAuthState;
+      }
+
+    [StructLayout(LayoutKind.Sequential, CharSet = CharSet.Unicode)]
+    public struct WlanHostedNetworkRadioState {
+      public Dot11RadioState SoftwareRadioState;
+      public Dot11RadioState HardwareRadioState;
+      }
+
+    [StructLayout(LayoutKind.Sequential, CharSet = CharSet.Unicode)]
+    public struct WlanHostedNetworkStateChange {
+      public HostedNetworkState OldState;
+      public HostedNetworkState NewState;
+      public HostedNetworkReason StateChangeReaso;
+      }
+
+    [StructLayout(LayoutKind.Sequential, CharSet = CharSet.Unicode)]
+    public struct WlanHostedNetworkDataPeerStateChange {
+      public WlanHostedNetworkPeerState OldState;
+      public WlanHostedNetworkPeerState NewState;
+      public HostedNetworkReason StateChangeReaso;
+      }
+
+    [StructLayout(LayoutKind.Sequential, CharSet = CharSet.Unicode)]
+    public struct WlanHostedNetworkConnectionSettings {
+      public Dot11Ssid HostedNetworkSsid;
+      public UInt32 MaxNumberOfPeers;
+      }
+
+    [StructLayout(LayoutKind.Sequential, CharSet = CharSet.Unicode)]
+    public struct WlanHostedNetworkSecuritySettings {
+      public Dot11AuthAlgorithm Dot11AuthAlgo;
+      public Dot11CipherAlgorithm Dot11CipherAlgo;
+      }
+
+    [StructLayout(LayoutKind.Sequential)]
+    public struct WlanHostedNetworkStatus {
+      public HostedNetworkState HostedNetworkState;
+      public Guid IPDeviceID;
+      [MarshalAs(UnmanagedType.ByValArray, SizeConst = 6)]
+      public byte[] HostedNetworkBSSID;
+      public Dot11PhyType PhyType;
+      public int Channel;
+      public int NumberOfPeers;
+      }
+
+    [DllImport("wlanapi.dll")]
+    public static extern int WlanHostedNetworkStartUsing(
+      [In] IntPtr clientHandle,
+      [Out] out HostedNetworkReason failReason,
+      IntPtr reservedPtr);
+
+    [DllImport("wlanapi.dll")]
+    public static extern int WlanHostedNetworkStopUsing(
+      [In] IntPtr clientHandle,
+      [Out] out HostedNetworkReason failReason,
+      IntPtr reservedPtr);
+
+    [DllImport("wlanapi.dll")]
+    public static extern int WlanHostedNetworkQueryProperty(
+      [In] IntPtr clientHandle,
+      [In] HostedNetworkOpcode OpCode,
+      [Out] out UInt32 DataSize,
+      [Out] out IntPtr Data,
+      [Out] out WlanOpcodeValueType OpcodeValueType,
+      IntPtr reservedPtr);
+
+    [DllImport("wlanapi.dll")]
+    public static extern int WlanHostedNetworkSetProperty(
+      [In] IntPtr clientHandle,
+      [In] HostedNetworkOpcode OpCode,
+      [In] UInt32 DataSize,
+      [In] IntPtr Data,
+      [Out] out HostedNetworkReason FailReason,
+      IntPtr reservedPtr);
+
+    [DllImport("wlanapi.dll")]
+    public static extern int WlanHostedNetworkInitSettings(
+      [In] IntPtr clientHandle,
+      [Out] out HostedNetworkReason FailReason,
+      IntPtr reservedPtr);
+
+    [DllImport("wlanapi.dll")]
+    public static extern int WlanHostedNetworkRefreshSecuritySettings(
+      [In] IntPtr clientHandle,
+      [Out] out HostedNetworkReason FailReason,
+      IntPtr reservedPtr);
+
+    [DllImport("wlanapi.dll")]
+    public static extern int WlanHostedNetworkQueryStatus(
+      [In] IntPtr clientHandle,
+      [Out] out IntPtr HostedNetworkStatus,
+      IntPtr reservedPtr);
+            
     }
 }
