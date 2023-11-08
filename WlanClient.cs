@@ -23,10 +23,8 @@ using System.Collections.Generic;
 using System.ComponentModel;
 using System.Runtime.InteropServices;
 using System.Text;
-using MetaGeek.Diagnostics;
-using MetaGeek.Diagnostics.Event;
 
-namespace ManagedWifi
+namespace ManagedWifiMetaGeek
 {
     public class WlanClient
     {
@@ -90,12 +88,6 @@ namespace ManagedWifi
             get { return _clientHandle; }
         }
 
-        private Logger ItsLogger
-        {
-            get;
-            set;
-        }
-
         private Wlan.WlanNotificationCallbackDelegate WlanNotificationCallback
         {
             get;
@@ -104,19 +96,10 @@ namespace ManagedWifi
 
         #endregion Properties
 
-        #region Event Fields
-
-        public RegisteredEventHandler<InterfaceNotificationEventsArgs> InterfaceArrivedEvent = new RegisteredEventHandler<InterfaceNotificationEventsArgs>();
-        public RegisteredEventHandler<InterfaceNotificationEventsArgs> InterfaceRemovedEvent = new RegisteredEventHandler<InterfaceNotificationEventsArgs>();
-
-        #endregion Event Fields
-
         #region Constructors
 
         public WlanClient()
         {
-            ItsLogger = new Logger(this);
-
             try
             {
                 Wlan.ThrowIfError(Wlan.WlanOpenHandle(1, IntPtr.Zero, out _negotiatedVersion, out _clientHandle));
@@ -128,7 +111,6 @@ namespace ManagedWifi
             catch (Win32Exception ex)
             {
                 Wlan.WlanCloseHandle(_clientHandle, IntPtr.Zero);
-                ItsLogger.Warn(ex.Message);
                 throw;
             }
         }
@@ -194,11 +176,9 @@ namespace ManagedWifi
                             goto Label_0194;
 
                         case 13:
-                            InterfaceArrivedEvent.Raise(this, new InterfaceNotificationEventsArgs(notifyData.interfaceGuid));
                             goto Label_0194;
 
                         case 14:
-                            InterfaceRemovedEvent.Raise(this, new InterfaceNotificationEventsArgs(notifyData.interfaceGuid));
                             goto Label_0194;
                     }
                     break;

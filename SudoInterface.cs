@@ -1,7 +1,7 @@
 ﻿using System;
 using System.Net.NetworkInformation;
 
-namespace ManagedWifi
+namespace ManagedWifiMetaGeek
 {
     class SudoInterface : NetworkInterface
     {

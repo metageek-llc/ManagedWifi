@@ -15,7 +15,7 @@
 // limitations under the License.
 //
 ////////////////////////////////////////////////////////////////
-namespace ManagedWifi
+namespace ManagedWifiMetaGeek
 {
     using System;
 

@@ -4,7 +4,7 @@ using System.Net.NetworkInformation;
 using System.Runtime.InteropServices;
 using System.Threading;
 
-namespace ManagedWifi
+namespace ManagedWifiMetaGeek
 {
     public class WlanInterface
     {

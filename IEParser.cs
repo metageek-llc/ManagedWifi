@@ -27,7 +27,7 @@ using System.Collections.Generic;
 using System.Globalization;
 using System.IO;
 
-namespace ManagedWifi
+namespace ManagedWifiMetaGeek
 {
     public static class IeParser
     {

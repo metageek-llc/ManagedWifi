@@ -25,7 +25,7 @@ using System.Net.NetworkInformation;
 using System.Runtime.InteropServices;
 using System.Text;
 
-namespace ManagedWifi
+namespace ManagedWifiMetaGeek
 {
     public static class Wlan
     {
